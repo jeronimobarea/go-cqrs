@@ -7,10 +7,10 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"github.com/jeronimobarea/go-cqrs/internal/pubsub"
+	"github.com/jeronimobarea/go-cqrs/internal/eventstorer"
 )
 
-var _ pubsub.EventStorer = &eventStorer{}
+var _ eventstorer.EventStorer = &eventStorer{}
 
 const (
 	bufferSize = 64
@@ -19,7 +19,7 @@ const (
 type eventStorer struct {
 	conn    *nats.Conn
 	sub     *nats.Subscription
-	channel chan pubsub.Message
+	channel chan eventstorer.Message
 }
 
 func NewEventStorer(conn *nats.Conn) *eventStorer {
@@ -28,17 +28,7 @@ func NewEventStorer(conn *nats.Conn) *eventStorer {
 	}
 }
 
-func (e *eventStorer) Close() {
-	if e.conn != nil {
-		e.conn.Close()
-	}
-	if e.sub != nil {
-		e.sub.Unsubscribe()
-	}
-	close(e.channel)
-}
-
-func (e *eventStorer) Publish(ctx context.Context, msg pubsub.Message) error {
+func (e *eventStorer) Publish(ctx context.Context, msg eventstorer.Message) error {
 	data, err := e.encodeMessage(msg)
 	if err != nil {
 		return err
@@ -46,7 +36,7 @@ func (e *eventStorer) Publish(ctx context.Context, msg pubsub.Message) error {
 	return e.conn.Publish(msg.Type(), data)
 }
 
-func (e eventStorer) encodeMessage(msg pubsub.Message) ([]byte, error) {
+func (e eventStorer) encodeMessage(msg eventstorer.Message) ([]byte, error) {
 	var b bytes.Buffer
 	err := gob.NewEncoder(&b).Encode(msg)
 	if err != nil {
@@ -55,12 +45,12 @@ func (e eventStorer) encodeMessage(msg pubsub.Message) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (e *eventStorer) Subscribe(ctx context.Context) (<-chan pubsub.Message, error) {
-	e.channel = make(chan pubsub.Message, bufferSize)
+func (e *eventStorer) Subscribe(ctx context.Context) (<-chan eventstorer.Message, error) {
+	e.channel = make(chan eventstorer.Message, bufferSize)
 	ch := make(chan *nats.Msg, bufferSize)
 
 	var (
-		m   pubsub.Message
+		m   eventstorer.Message
 		err error
 	)
 	e.sub, err = e.conn.ChanSubscribe(m.Type(), ch)
@@ -77,12 +67,12 @@ func (e *eventStorer) Subscribe(ctx context.Context) (<-chan pubsub.Message, err
 			}
 		}
 	}()
-	return (<-chan pubsub.Message)(e.channel), nil
+	return (<-chan eventstorer.Message)(e.channel), nil
 }
 
-func (e eventStorer) OnCreate(f func(pubsub.Message)) error {
+func (e eventStorer) OnCreate(f func(eventstorer.Message)) error {
 	var (
-		msg pubsub.Message
+		msg eventstorer.Message
 		err error
 	)
 	e.sub, err = e.conn.Subscribe(msg.Type(), func(m *nats.Msg) {

@@ -13,10 +13,10 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/jeronimobarea/go-cqrs/internal/config"
+	eventStorer "github.com/jeronimobarea/go-cqrs/internal/eventstorer/nats"
 	"github.com/jeronimobarea/go-cqrs/internal/feed"
 	feedHandlers "github.com/jeronimobarea/go-cqrs/internal/feed/handlers"
 	feedRepo "github.com/jeronimobarea/go-cqrs/internal/feed/repository"
-	pubsubNats "github.com/jeronimobarea/go-cqrs/internal/pubsub/nats"
 )
 
 var cfg config.Config
@@ -43,7 +43,7 @@ func Run() {
 		if err != nil {
 			panic(err)
 		}
-		eventStorer := pubsubNats.NewEventStorer(conn)
+		eventStorer := eventStorer.NewEventStorer(conn)
 		feed.NewService(repo, eventStorer)
 	}
 

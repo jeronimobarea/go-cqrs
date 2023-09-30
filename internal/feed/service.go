@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jeronimobarea/go-cqrs/internal/pubsub"
+	"github.com/jeronimobarea/go-cqrs/internal/eventstorer"
 )
 
 type Service interface {
@@ -13,10 +13,10 @@ type Service interface {
 
 type service struct {
 	repo Repository
-	nats pubsub.EventStorer
+	nats eventstorer.EventStorer
 }
 
-func NewService(repo Repository, nats pubsub.EventStorer) *service {
+func NewService(repo Repository, nats eventstorer.EventStorer) *service {
 	return &service{
 		repo: repo,
 		nats: nats,

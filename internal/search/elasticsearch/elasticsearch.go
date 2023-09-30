@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 
 	elastic "github.com/elastic/go-elasticsearch/v8"
 
@@ -43,7 +42,7 @@ func (r *repository) Index(ctx context.Context, idx, id string, data any) error 
 	return nil
 }
 
-func (r *repository) Search(ctx context.Context, idx, query string, fields []string) (io.ReadCloser, error) {
+func (r *repository) Search(ctx context.Context, idx, query string, fields []string) ([]any, error) {
 	searchQuery := NewSearchWithDefaults(query, fields)
 
 	var buf bytes.Buffer
@@ -70,5 +69,7 @@ func (r *repository) Search(ctx context.Context, idx, query string, fields []str
 	if err := json.NewDecoder(res.Body).Decode(&rawRes); err != nil {
 		return nil, err
 	}
-	return res.Body, nil
+
+	hits := rawRes["hits"].(map[string]any)["hits"].([]any)
+	return hits, nil
 }

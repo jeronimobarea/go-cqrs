@@ -25,3 +25,9 @@ services:
   nats:
     image: nats:latest
     restart: always
+
+  elastic:
+    image: elasticsearch:latest
+    restart: always
+    environment:
+      - "discovery.type=sing-node"

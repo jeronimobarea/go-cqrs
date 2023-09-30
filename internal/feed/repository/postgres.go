@@ -26,7 +26,7 @@ func NewRepository(db *sql.DB) *repository {
 	}
 }
 
-func (r *repository) Insert(ctx context.Context, feed *feed.Feed) error {
+func (r *repository) Insert(ctx context.Context, feed feed.Feed) error {
 	q := `INSERT INTO ` + tableName + `(uuid, title, description, creation_date)` +
 		`VALUES ($1, $2, $3, $4)`
 

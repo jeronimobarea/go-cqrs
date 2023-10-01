@@ -1,7 +1,9 @@
 package main
 
-import "github.com/jeronimobarea/go-cqrs/internal/api"
+import (
+	feedApi "github.com/jeronimobarea/go-cqrs/internal/feed/api"
+)
 
 func main() {
-	api.Run()
+	feedApi.Run()
 }

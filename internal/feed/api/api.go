@@ -29,10 +29,10 @@ func init() {
 }
 
 func Run() {
-	var feedsSvc feed.Service
+	var feedSvc feed.Service
 	{
 		dbUrl := buildDBUrl()
-		db, err := sql.Open("", dbUrl)
+		db, err := sql.Open("postgres", dbUrl)
 		if err != nil {
 			panic(err)
 		}
@@ -44,7 +44,7 @@ func Run() {
 			panic(err)
 		}
 		eventStorer := eventStorer.NewEventStorer(conn)
-		feed.NewService(repo, eventStorer)
+		feedSvc = feed.NewService(repo, eventStorer)
 	}
 
 	var r *chi.Mux
@@ -58,7 +58,7 @@ func Run() {
 		r.Use(middleware.Timeout(60 * time.Second))
 	}
 
-	feedHandlers.RegisterRoutes(r, feedsSvc)
+	feedHandlers.RegisterRoutes(r, feedSvc)
 
 	http.ListenAndServe(":3000", r)
 }
